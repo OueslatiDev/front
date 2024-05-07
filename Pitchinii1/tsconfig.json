@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "downlevelIteration": true,
     "types": [
       "socket.io-client"
     ],
@@ -24,6 +25,7 @@
     "jsx": "preserve"
   },
   "include": [
+    
     "src"
   ]
 }

@@ -9,6 +9,7 @@ import Nav from "../components/Nav";
 import { useParams } from "react-router-dom";
 import Projet from "../components/Projet";
 import FindJobHeader from "../components/FindJobHeader";
+import Naav from "../components/Naav";
 interface ProjectsServicesListAttributes {
   serviceId: number;
   projectId: number;
@@ -18,15 +19,17 @@ interface ProjectData {
   name: string;
   description: string;
   creationDate: Date;
-  deadLine: string;
-  groupId: number;
-  freelancerId: number;
-  clientId: number;
-  status: String;
+  deadLine: Date;
   addedFile: boolean;
   requestQuotation: boolean;
-  workingPreference: String;
-  totalPrice?: number;
+  workingPreference: string;
+  category: string;
+  totalPrice?: number | null;
+  finishedDate?: Date | null;
+  freelancerId: number;
+  clientId: number;
+  isPublished: boolean;
+  status: string;
 
 }
 interface UserData {
@@ -51,6 +54,8 @@ const SearchJob: FunctionComponent = () => {
   const [projectsWork, setProjectsWork] = useState<ProjectData[]>([]);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState<number>(1);
+  const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
+  const [showPopup, setShowPopup] = useState<boolean>(false);
   const { id } = useParams();
     console.log(id);
   const fetchProjects = async () => {
@@ -101,8 +106,8 @@ const SearchJob: FunctionComponent = () => {
   }, [])
 
   return (
-    <div className="w-full relative bg-white shadow-[0px_3px_3.02px_rgba(0,_0,_0,_0.25)] overflow-hidden flex flex-col items-start justify-start tracking-[normal]">
-      <Nav />
+    <div className="w-full relative bg-white shadow-[0px_3px_3.02px_rgba(0,_0,_0,_0.25)] overflow-hidden flex flex-col items-start justify-start ">
+   <Naav  userId={id || ''} />
 
       <div className="w-[114.6px] h-[64.4px] relative box-border hidden border-[0.8px] border-solid border-dgrad-color" style={{ top: 0 }} />
       <main className="w-[1402.8px] flex flex-row items-end justify-center py-0 pr-5 pl-0 box-border gap-[59.7px] max-w-full lg:flex-wrap mq750:gap-[59.7px_30px]">
@@ -119,7 +124,7 @@ const SearchJob: FunctionComponent = () => {
           <FindJobHeader activeTab={activeTab} setActiveTab={setActiveTab} projects={projects} setProjects={setProjects} userId={id || ''} projectsWork={projectsWork} setProjectsWork={setProjectsWork} />
 
           {projectsWork.map((project) => (
-            <Projet key={project.id} projectWork={project} activeTab={activeTab}   userId={id || ''}/>
+            <Projet key={project.id} projectWork={project} activeTab={activeTab}   userId={id || ''}     />
           ))}
 
 

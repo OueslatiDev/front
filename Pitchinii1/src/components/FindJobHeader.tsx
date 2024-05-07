@@ -14,15 +14,17 @@ interface ProjectData {
   name: string;
   description: string;
   creationDate: Date;
-  deadLine: string;
-  groupId: number;
-  freelancerId: number;
-  clientId: number;
-  status: String;
+  deadLine: Date;
   addedFile: boolean;
   requestQuotation: boolean;
-  workingPreference: String;
-  totalPrice?: number;
+  workingPreference: string;
+  category: string;
+  totalPrice?: number | null;
+  finishedDate?: Date | null;
+  freelancerId: number;
+  clientId: number;
+  isPublished: boolean;
+  status: string;
 }
 interface UserSkillsRelationAttributes {
   skills_id: number;
@@ -72,6 +74,7 @@ const FindJobHeader: FunctionComponent<FrameComponentProps> = ({ activeTab, setA
   const [showDropdown, setShowDropdown] = useState(false);
   const [showResults, setShowResults] = useState(false); // Etat pour afficher/masquer les résultats de la recherche
   // Fonction pour récupérer les compétences de l'utilisateur
+  
   useEffect(() => {
     setShowResults(filteredProjects.length > 0);
   }, [filteredProjects]);
@@ -209,15 +212,16 @@ const FindJobHeader: FunctionComponent<FrameComponentProps> = ({ activeTab, setA
   const onBestMatchesClick = useCallback(() => {
     setActiveTab(1);
 
-  }, [setActiveTab, activeTab]);
+  }, []);
 
 
   const onMostRecentTextClick = useCallback(() => {
     setActiveTab(2);
     setProjectsWork(projects);
     const sortedProjects = [...projectsWork].sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
+    console.log(sortedProjects)
     setProjectsWork(sortedProjects);
-  }, [setActiveTab, activeTab, projects]);
+  }, []);
 
 
   useEffect(() => {
@@ -253,7 +257,7 @@ const FindJobHeader: FunctionComponent<FrameComponentProps> = ({ activeTab, setA
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
-  }, [setActiveTab, setProjectsWork]);
+  }, []);
   useEffect(() => {
     onSavedJobsTextClick();
   },[ onSavedJobsTextClick])
@@ -356,21 +360,7 @@ const FindJobHeader: FunctionComponent<FrameComponentProps> = ({ activeTab, setA
 
 
 
-          <TransitionGroup>
-            {showResults && (
-              <CSSTransition classNames="search-results" timeout={300}>
-                <div className="search-results">
-                  <List>
-                    {filteredProjects.map((project) => (
-                      <ListItem key={project.id}>
-                        <ListItemText primary={project.name} secondary={project.description} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </div>
-              </CSSTransition>
-            )}
-          </TransitionGroup>
+        
         </div>
       </div>
     </div>
