@@ -23,6 +23,7 @@ import { subDays } from "date-fns";
 import { get } from "../utilFunctions/getData";
 import { modifyData } from "../utilFunctions/modifyData";
 import { useNavigate } from "react-router-dom";
+
 import {
   formatDistance,
   differenceInSeconds,
@@ -31,7 +32,7 @@ import {
 } from "date-fns";
 
 const NotificationsBadge = styled(Badge)(
-  
+
   ({ theme }) => `
       
       .MuiBadge-badge {
@@ -56,10 +57,10 @@ const NotificationsBadge = styled(Badge)(
 );
 interface FrameComponentProps {
   userId: string;
-  
-  
-  }
-const HeaderNotifications : FunctionComponent<FrameComponentProps>  = ({userId}) => {
+
+
+}
+const HeaderNotifications: FunctionComponent<FrameComponentProps> = ({ userId }) => {
   const ref = useRef<any>(null);
   const [isOpen, setOpen] = useState<boolean>(false);
   const [clicked, setClicked] = useState(false);
@@ -77,7 +78,7 @@ const HeaderNotifications : FunctionComponent<FrameComponentProps>  = ({userId})
   };
   useEffect(() => {
     async function fetchData() {
-    
+
       const res = await get(
         `http://localhost:3001/api/notification/allUsernotifications/${userId}`
       );
@@ -89,19 +90,19 @@ const HeaderNotifications : FunctionComponent<FrameComponentProps>  = ({userId})
         isRead: item.isRead,
         userId: item.userId,
         freelancerId: item.freelancerId,
-        projectId:item.projectId
+        projectId: item.projectId
       }));
       // Sort notifications with isRead === 0 at the beginning
       notifications.sort((b: any, a: any) => b.isRead - a.isRead);
 
       setNotification(notifications);
-      
+
       // Calculate unread count after setting notifications
       const UnreadCount = notifications.filter(
         (notification: any) => !notification.isRead
       ).length;
       setUnreadCount(UnreadCount);
-      
+
     }
 
     fetchData();
@@ -140,7 +141,7 @@ const HeaderNotifications : FunctionComponent<FrameComponentProps>  = ({userId})
     setClicked(false);
   }
 
-  const navigate = useNavigate();
+ 
 
   function handleProfileClick(id: number) {
     if (id != null) navigate(`/freelancerPortfolio/${id}`);
@@ -149,61 +150,86 @@ const HeaderNotifications : FunctionComponent<FrameComponentProps>  = ({userId})
     const currentDate = new Date();
 
     if (creationDate != null) {
-        const distance =
-            new Date(currentDate).getTime() - new Date(creationDate).getTime();
-        const seconds = Math.floor(distance / 1000);
+      const distance =
+        new Date(currentDate).getTime() - new Date(creationDate).getTime();
+      const seconds = Math.floor(distance / 1000);
 
-        if (seconds < 60) {
-            return `${seconds} second${seconds !== 1 ? "s" : ""} ago`;
-        } else if (seconds < 3600) {
-            const minutes = Math.floor(seconds / 60);
-            return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
-        } else if (seconds < 86400) {
-            const hours = Math.floor(seconds / 3600);
-            return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
-        } else if (seconds < 604800) {
-            const days = Math.floor(seconds / 86400);
-            return `${days} day${days !== 1 ? "s" : ""} ago`;
-        } else {
-            const weeks = Math.floor(seconds / 604800);
-            return `${weeks} week${weeks !== 1 ? "s" : ""} ago`;
-        }
+      if (seconds < 60) {
+        return `${seconds} second${seconds !== 1 ? "s" : ""} ago`;
+      } else if (seconds < 3600) {
+        const minutes = Math.floor(seconds / 60);
+        return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+      } else if (seconds < 86400) {
+        const hours = Math.floor(seconds / 3600);
+        return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+      } else if (seconds < 604800) {
+        const days = Math.floor(seconds / 86400);
+        return `${days} day${days !== 1 ? "s" : ""} ago`;
+      } else {
+        const weeks = Math.floor(seconds / 604800);
+        return `${weeks} week${weeks !== 1 ? "s" : ""} ago`;
+      }
     }
     return ""; // Return a default value when creationDate is null
-};
-const handleSendMessage = async ({userId, freelancerId, projectId}: {userId: string, freelancerId: string, projectId: string}) => {
-  try {
-    // Ajouter la conversation
-    const conversationResponse = await fetch("http://localhost:3001/api/Conversation/addConversation", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        conversationName: "New Conversation"
-      }),
-    });
-    const conversation = await conversationResponse.json();
+  };
+  const navigate = useNavigate();
+  const handleSendMessage = async ({ userId, freelancerId, projectId }: { userId: string, freelancerId: string, projectId: string }) => {
+    try {
+      console.log("qqqqqqqqqqqqqqqqqqq")
+        // Récupérer le nombre total de conversations
+       
+        // Vérifier si la conversation existe déjà
+        const convCheckResponse = await fetch(`http://localhost:3001/api/userConversation/find/${userId}/${freelancerId}`);
+        const convCheckData = await convCheckResponse.json();
+        const conversationExists = convCheckData.conversationExists;
+        console.log(convCheckData,"aoaoaoa")
+        if (convCheckData) {
+            // Rediriger vers la page de discussion existante
+            navigate(`/discussion/${userId}`, {
+                state: {},
+            });
+        } else {
+          const response = await fetch("http://localhost:3001/api/Conversation/getConversationCount");
+          const data = await response.json();
+          const conversationCount = data.conversationCount;
+          console.log(conversationCount,"vvvvvvvvvvvv" )
+  
+            // Ajouter la nouvelle conversation
+            const conversationResponse = await fetch("http://localhost:3001/api/Conversation/addConversation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: conversationCount + 1,
+                    conversationName: "New Conversation"
+                }),
+            });
+            const conversation = await conversationResponse.json();
 
-    // Ajouter la relation utilisateur-conversation
-   
-    await fetch("http://localhost:3001/api/addUserConversation", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: freelancerId,
-        conversationId: conversation.id,
-      }),
-    });
+            // Ajouter la relation utilisateur-conversation
+            await fetch("http://localhost:3001/api/userConversation/addUserConversation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    senderId: userId,
+                    conversationId: conversation.id,
+                    recipientId: freelancerId,
+                }),
+            });
 
-    // Rediriger vers la page de discussion avec l'ID de la conversation nouvellement créée
-   
-  } catch (error) {
-    console.error("Erreur lors de l'envoi du message :", error);
-  }
+            // Rediriger vers la page de discussion avec l'ID de la conversation nouvellement créée
+           navigate(`/discussion/${userId}`, {
+           state: {},
+        });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'envoi du message :", error);
+    }
 };
+
 
 
   return (
@@ -234,17 +260,17 @@ const handleSendMessage = async ({userId, freelancerId, projectId}: {userId: str
           horizontal: "right",
         }}
       >
-       <Box
-  sx={{
-    p: 2,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#f1f1f1",
-  }}
->
-  <Typography variant="h5">Notifications</Typography>
-</Box>
+        <Box
+          sx={{
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: "#f1f1f1",
+          }}
+        >
+          <Typography variant="h5">Notifications</Typography>
+        </Box>
 
         <Divider />
         <List
@@ -254,7 +280,9 @@ const handleSendMessage = async ({userId, freelancerId, projectId}: {userId: str
           className="md:w-[300px] w-[400px]"
         >
           {notification.map((item) => (
+           
             <ListItem
+            
               key={item.id}
               sx={{
                 p: 2,
@@ -304,7 +332,7 @@ const handleSendMessage = async ({userId, freelancerId, projectId}: {userId: str
                     </Button>
                     <Button
                       variant="outlined"
-                      onClick={() => handleProfileClick(item.freelancerId)}
+                      onClick={() => handleSendMessage({ userId: item.userId, freelancerId: item.freelancerId, projectId: item.projectId })}
                       sx={{
                         ml: 1,
                         padding: "5px",
@@ -314,6 +342,7 @@ const handleSendMessage = async ({userId, freelancerId, projectId}: {userId: str
                     >
                       Send Message
                     </Button>
+
                   </Box>
                 )}
               </Box>

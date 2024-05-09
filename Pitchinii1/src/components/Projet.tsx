@@ -106,6 +106,7 @@
       setShowPopup(true);
     };
     async function apply() {
+      console.log("aplyyyyyyyyyyy")
       if (!selectedProject) {
         console.error('Selected project is not set');
         return;
@@ -120,9 +121,9 @@
           message: "A freelancer applied for your job",
           userId: selectedProject.clientId,
           freelancerId: userId,
-          projectId: selectedProject.id
         })
       });
+      
     };
     
     return (

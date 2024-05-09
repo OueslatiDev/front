@@ -30,7 +30,7 @@ interface UserData {
   resetToken?: string;
   tokenExpiration?: Date;
 }
-interface UserConversationRelation {
+interface  UserConversationRelation {
   senderId: number;
   conversationId: number;
   recipientId: number;
@@ -271,7 +271,37 @@ const Discussion: FunctionComponent = () => {
     }
   };
 
-
+  const handleReport = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const from = currentChat?.senderId == id ? currentChat?.senderId : currentChat?.recipientId;
+    const to = currentChat?.senderId == id ? currentChat?.recipientId : currentChat?.senderId;
+    const reportData = {
+      type: "private",
+      reportDate: new Date(),
+      reason: "Inappropriate behavior",
+      isHandled: false,
+      from:from ,
+      to: to
+    };
+    try {
+      const response = await fetch("http://localhost:3001/api/signalement/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(reportData)
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to add report");
+      }
+  
+      const responseData = await response.json();
+      console.log("Report added successfully:", responseData);
+    } catch (error) {
+      console.error("Error adding report:", error);
+    }
+  };
+  
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -323,6 +353,10 @@ const Discussion: FunctionComponent = () => {
                       <button className="chatSubmitButton" onClick={handleSubmit}
                       >
                         Send
+                      </button>
+                      <button className="chatSubmitButton" onClick={handleReport}
+                      >
+                        report
                       </button>
                     </div>
                   </> : <span className="noConversationText">open a conversation to start a chat ...</span>
